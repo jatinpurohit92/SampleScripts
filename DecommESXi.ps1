@@ -7,7 +7,9 @@
 
 
 #provide the ESXi Name to hostlist.txt and update the file path, Mentioned hosts will be decomm
-$hostlist = get-content -Path f:\GithubRepo\Lab-Scripts\hostlist.txt    
+$hostlist = get-content -Path f:\GithubRepo\Lab-Scripts\hostlist.txt 
+
+#Defining a New Function to invoke maintenance mode
 Function Invoke-MaintenanceMode([String]$name)
 {
     #Set vmhost in maintenance mode
@@ -19,6 +21,8 @@ Function Invoke-MaintenanceMode([String]$name)
     } until ((Get-VMHost $name).ConnectionState -eq 'Maintenance')
     Write-Host "$name : is in Maintenance mode now" -foregroundcolor Green
 }
+
+#Defining a New Function to shutdown a VMhost
 Function Invoke-VMhostShutDown([String]$name)
 {
     #Shut down vmhost
