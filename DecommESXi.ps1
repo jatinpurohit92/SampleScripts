@@ -1,5 +1,11 @@
+#The following scripts should be thoroughly checked and tested before executing to the Production environment. 
+#The author is not responsible for any outages/issues occured due to the sample scripts.
+#You can download and make the required changes
+
 #This is a Sample script to decommission ESXi Hosts
 #Test/Inspect before executing it. 
+
+
 #provide the ESXi Name to hostlist.txt and update the file path, Mentioned hosts will be decomm
 $hostlist = get-content -Path f:\GithubRepo\Lab-Scripts\hostlist.txt    
 Function Invoke-MaintenanceMode([String]$name)
