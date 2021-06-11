@@ -15,27 +15,30 @@ Param(
     $Password
 )
 
-$Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, (ConvertTo-SecureString -String $Password -AsPlainText -Force)
 
+$Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, (ConvertTo-SecureString -String $Password -AsPlainText -Force)
 #Connect vCenter Server
 Connect-ViServer -Server $server -Credential $Credential
-
-#Get vSAN file Share
 $vSANFileShare = Get-VsanFileShare -Name 'profiles'
-$random = Get-Random -Maximum 100
-$snName = 'veeam' + $random
-#create a New File share Snapshot
-New-VsanFileShareSnapshot -Name $snName -FileShare $vSANFileShare -Confirm:$false
 
+Function Remove-OldSnapshot()
+{
 #Get existing vSAN File share Snapshot
+    #Get vSAN file Share
     $SnapshotList = Get-VsanFileShareSnapshot -FileShare (Get-VsanFileShare -name profiles) 
     foreach($snapshot in $SnapshotList)
     {
-        $NumofSnaphshot= Get-VsanFileShareSnapshot -FileShare (Get-VsanFileShare -name profiles) 
-        if ($NumofSnaphshot.Count -gt 1)
+        $NumofSnaphshot= (Get-VsanFileShareSnapshot -FileShare (Get-VsanFileShare -name profiles)).Count
+        if ($NumofSnaphshot -gt 1)
         {
             #Remove all the snapshot one by one, Except the latest one
            $snapshot| Remove-VsanFileShareSnapshot  -Verbose -Confirm:$false
         }
     }
-
+}
+#create a Temp File share Snapshot
+$TempsnName = 'veeam_Temp'
+New-VsanFileShareSnapshot -Name $TempsnName -FileShare $vSANFileShare -Confirm:$false
+Remove-OldSnapshot
+New-VsanFileShareSnapshot -Name 'Veeam' -FileShare $vSANFileShare -Confirm:$false
+Remove-OldSnapshot
