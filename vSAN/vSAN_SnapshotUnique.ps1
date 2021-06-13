@@ -12,11 +12,7 @@ Param(
     [string]
     $Password
 )
-<#
-$userPete = 'satm\ad-pflecha'
-$PasswordPete ='Admin!23'
-$CredentialPete = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $UserPete, (ConvertTo-SecureString -String $PasswordPete -AsPlainText -Force)
-#>
+
 
 $UID= New-GUID
 $outputFileName='E:\Backup\VeeamLogs\'+ $UID +'.log'
