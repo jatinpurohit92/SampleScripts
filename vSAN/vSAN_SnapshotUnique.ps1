@@ -21,7 +21,7 @@ $CredentialPete = New-Object -TypeName System.Management.Automation.PSCredential
 $UID= New-GUID
 $outputFileName='E:\Backup\VeeamLogs\'+ $UID +'.log'
 Start-Transcript -Path $outputFileName
-Remove-Item -Path '\\pflecha-141.satm.eng.vmware.com\vsanfs\Backups\Backup\*' -Recurse   -Verbose
+Remove-Item -Path '\\fileshare.lab.com\vsanfs\Backups\Backup\*' -Recurse   -Verbose
 
 $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, (ConvertTo-SecureString -String $Password -AsPlainText -Force)
 Connect-ViServer -Server $server -Credential $Credential
@@ -40,7 +40,7 @@ New-VsanFileShareSnapshot -Name $snName -FileShare $vSANFileShare -Confirm:$fals
     }
 
 Write-Host "Start Data copy"
-$RecentSnapshotPath = '\\pflecha-141.satm.eng.vmware.com\vsanfs\Profiles\.vdfs\snapshot\' + $snName +'\*'
+$RecentSnapshotPath = '\\fileshare.lab.com\vsanfs\Profiles\.vdfs\snapshot\' + $snName +'\*'
 Write-Host $RecentSnapshotPath -ForegroundColor Green
-Copy-Item -Path $RecentSnapshotPath -Recurse -Destination '\\pflecha-141.satm.eng.vmware.com\vsanfs\Backups\Backup'  -Verbose
+Copy-Item -Path $RecentSnapshotPath -Recurse -Destination '\\fileshare.lab.com\vsanfs\Backups\Backup'  -Verbose
 
