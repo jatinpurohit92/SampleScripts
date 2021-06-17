@@ -3,12 +3,10 @@ Param(
     [ValidateNotNullOrEmpty()]
     [string]
     $Server,
-
     [Parameter(Mandatory = $true)]
     [ValidateNotNullOrEmpty()]
     [string]
     $User,
-
     [Parameter(Mandatory = $true)]
     [ValidateNotNullOrEmpty()]
     [string]
@@ -16,29 +14,29 @@ Param(
 )
 
 
+$UID= New-GUID
+$outputFileName='E:\Backup\VeeamLogs\'+ $UID +'.log'
+Start-Transcript -Path $outputFileName
+
+#Connect vcenter Server
 $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, (ConvertTo-SecureString -String $Password -AsPlainText -Force)
-#Connect vCenter Server
 Connect-ViServer -Server $server -Credential $Credential
+
+#Query vSAN Fileshare 
 $vSANFileShare = Get-VsanFileShare -Name 'profiles'
 
-Function Remove-OldSnapshot()
-{
-#Get existing vSAN File share Snapshot
-    #Get vSAN file Share
-    $SnapshotList = Get-VsanFileShareSnapshot -FileShare (Get-VsanFileShare -name profiles) 
-    foreach($snapshot in $SnapshotList)
-    {
-        $NumofSnaphshot= (Get-VsanFileShareSnapshot -FileShare (Get-VsanFileShare -name profiles)).Count
-        if ($NumofSnaphshot -gt 1)
-        {
-            #Remove all the snapshot one by one, Except the latest one
-           $snapshot| Remove-VsanFileShareSnapshot  -Verbose -Confirm:$false
-        }
-    }
-}
-#create a Temp File share Snapshot
-$TempsnName = 'veeam_Temp'
-New-VsanFileShareSnapshot -Name $TempsnName -FileShare $vSANFileShare -Confirm:$false
-Remove-OldSnapshot
-New-VsanFileShareSnapshot -Name 'Veeam' -FileShare $vSANFileShare -Confirm:$false
-Remove-OldSnapshot
+#Set Random
+$random = Get-Random -Maximum 10000
+$snName = 'veeam' + $random
+
+#Create a new Snapshot
+New-VsanFileShareSnapshot -Name $snName -FileShare $vSANFileShare -Confirm:$false
+$SnapshotList = Get-VsanFileShareSnapshot -FileShare (Get-VsanFileShare -name profiles) 
+
+#retain the latest shanpshot and delete older ones
+$SnapshotList | Select-Object -First ($SnapshotList.Count -1) |Remove-VsanFileShareSnapshot -Confirm:$false -Verbose
+$RecentSnapshotPath = '\\pflecha-141.satm.eng.vmware.com\vsanfs\Profiles\.vdfs\snapshot\' + $snName
+
+#Update the vSAN File share SnapshotDetails
+$vbServer = Get-VBRNASServer | Where-Object -FilterScript {$_.path -eq '\\pflecha-141.satm.eng.vmware.com\vsanfs\Profiles'} 
+Set-VBRNASSMBServer -Server $vbserver -ProcessingMode StorageSnapshot -StorageSnapshotPath $RecentSnapshotPath
