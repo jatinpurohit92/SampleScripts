@@ -25,9 +25,9 @@ Connect-ViServer -Server $server -Credential $Credential
 #Query vSAN Fileshare 
 $vSANFileShare = Get-VsanFileShare -Name 'profiles'
 
-#Set Random
-$random = Get-Random -Maximum 10000
-$snName = 'veeam' + $random
+#Snapshot Name with a Time Stamp
+$date= Get-Date -Format "ddd_dd-MM-yyyy_HHmmss"
+$snName = 'veeam_' + $date
 
 #Create a new Snapshot
 New-VsanFileShareSnapshot -Name $snName -FileShare $vSANFileShare -Confirm:$false
