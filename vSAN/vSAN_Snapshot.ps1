@@ -33,7 +33,7 @@ $snName = 'veeam' + $random
 New-VsanFileShareSnapshot -Name $snName -FileShare $vSANFileShare -Confirm:$false
 $SnapshotList = Get-VsanFileShareSnapshot -FileShare (Get-VsanFileShare -name profiles) 
 
-#retain the latest shanpshot and delete older ones
+#Retain the latest snapshot and delete older ones
 $SnapshotList | Select-Object -First ($SnapshotList.Count -1) |Remove-VsanFileShareSnapshot -Confirm:$false -Verbose
 $RecentSnapshotPath = '\\fileshare-lab.com\vsanfs\Profiles\.vdfs\snapshot\' + $snName
 
