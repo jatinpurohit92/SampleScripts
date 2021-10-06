@@ -28,29 +28,32 @@ New-Cluster -Location Datacenter -Name $clusterName -BaseImage  $vLCMBaseImage -
 
 #Get Cluster vlcm desired Image 
 #.....Cluster with a vLCM desired Image 
-Get-Cluster -Name $clusterName |Select-Object -Property Name, Image, @{n='BaseImageVersion'; e={$_.BaseImage.Version}}, Componenets, VendorAddon
+Get-Cluster -Name $clusterName |Select-Object -Property Name,  @{n='BaseImageVersion'; e={$_.BaseImage.Version}}, Componenets, VendorAddon
 
 #Update Cluster vLCM desired Image
 #.....Change the Cluster Base Image to ESXi 7.0 U2
-$vLCMBaseImageu2= Get-LcmImage -Version '7.0 U2a - 17867351'
+$vLCMBaseImageu2= Get-LcmImage -Version '7.0 U3 - 18644231'
 Get-Cluster -Name $clusterName|Set-Cluster -BaseImage $vLCMBaseImageu2
 
 #Check the Cluster Compliance 
 #.....Check the Cluster Compliance 
 Get-Cluster -Name $clusterName|Test-LcmClusterCompliance
+Get-Cluster |Test-LcmClusterCompliance -ErrorAction 'SilentlyContinue'
+(Get-Cluster |Test-LcmClusterCompliance).NonCompliantHosts    
 
 #Remediate vLCM Cluster
 #.....Remediating vLCM
 Get-Cluster -Name $clusterName|Set-Cluster -Remediate -AcceptEULA
 
 #Export vLCM Desired Image 
-Get-Cluster -Name $clusterName|Export-LcmClusterDesiredState -Destination 'F:\Image' -ExportOfflineBundle -ExportIsoImage
+Get-Cluster -Name $clusterName|Export-LcmClusterDesiredState -Destination 'E:\vLCMImage' -ExportOfflineBundle -ExportIsoImage
 
 #Import vLCM Desired Image
 #Cluster as a parameter
-Import-LcmClusterDesiredState -Cluster 'Jatin' -LocalSpecLocation F:\Image\TAM-APJ-desired-state-spec.json -Verbose
-#get-cluster and Import vLCM desired image
-Get-Cluster -Name 'Jatin1' |Import-LcmClusterDesiredState -LocalSpecLocation F:\Image\TAM-APJ-desired-state-spec.json
+
 
 #Create a new Cluster and Import LCM desired image 
-New-Cluster -Name 'Lab-test' -Location Datacenter |Import-LcmClusterDesiredState -LocalSpecLocation F:\Image\TAM-APJ-desired-state-spec.json
+New-Cluster -Name 'VMworldDemo2' -Location 'Datacenter' |Import-LcmClusterDesiredState -LocalSpecLocation 'E:\vLCMImage\VMworldDemo1-desired-state-spec.json'
+
+#Set Depot Override
+Get-Cluster 'VMworldDemo2' | Set-Cluster -HAEnabled $true -DrsEnabled $true -DepotOverride '//10.196.113.83/'
