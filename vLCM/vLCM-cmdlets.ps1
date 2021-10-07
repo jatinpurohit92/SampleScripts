@@ -23,17 +23,17 @@ Get-LCMImage -Type 'BaseImage', 'VendorAddOn'
 #Create a new Cluster with vLCM Desired Image and
 $clusterName= Read-Host -Prompt 'Provide the cluster Name'
 $vLCMBaseImage = Get-LCMImage -Version '7.0 GA - 15843807'
-New-Cluster -Location Datacenter -Name $clusterName -BaseImage  $vLCMBaseImage -HAEnabled -DrsEnabled
+New-Cluster -Location 'Datacenter' -Name $clusterName -BaseImage  $vLCMBaseImage -HAEnabled -DrsEnabled 
 
 
 #Get Cluster vlcm desired Image 
 #.....Cluster with a vLCM desired Image 
-Get-Cluster -Name $clusterName |Select-Object -Property Name,  @{n='BaseImageVersion'; e={$_.BaseImage.Version}}, Componenets, VendorAddon
+Get-Cluster -Name $clusterName |Select-Object -Property Name,  @{n='BaseImageVersion'; e={$_.BaseImage.Version}}, Components, VendorAddon
 
 #Update Cluster vLCM desired Image
 #.....Change the Cluster Base Image to ESXi 7.0 U2
-$vLCMBaseImageu2= Get-LcmImage -Version '7.0 U3 - 18644231'
-Get-Cluster -Name $clusterName|Set-Cluster -BaseImage $vLCMBaseImageu2
+$vLCMBaseImageu3= Get-LcmImage -Version '7.0 U3 - 18644231'
+Get-Cluster -Name $clusterName|Set-Cluster -BaseImage $vLCMBaseImageu3 
 
 #Check the Cluster Compliance 
 #.....Check the Cluster Compliance 
@@ -43,7 +43,7 @@ Get-Cluster |Test-LcmClusterCompliance -ErrorAction 'SilentlyContinue'
 
 #Remediate vLCM Cluster
 #.....Remediating vLCM
-Get-Cluster -Name $clusterName|Set-Cluster -Remediate -AcceptEULA
+Get-Cluster -Name $clusterName|Set-Cluster -Remediate -AcceptEULA 
 
 #Export vLCM Desired Image 
 Get-Cluster -Name $clusterName|Export-LcmClusterDesiredState -Destination 'E:\vLCMImage' -ExportOfflineBundle -ExportIsoImage
