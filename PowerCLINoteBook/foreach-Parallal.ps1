@@ -1,5 +1,6 @@
 $cred= Get-Credential
 $conn = Connect-VIServer testvcsa.cpbu.com -Credential  $cred
+$cluster= Get-Cluster Cluster
 
 
 #Example1: foreach-object -parallel with PowerCLI Context, Requires PowerCLI12.2
@@ -7,10 +8,13 @@ Function Execute-WithPcliContext
 {
     
     $pcliContext= Get-PowerCLIContext 
-    $vmlist= get-VM
-    $vmlist |ForEach-Object -Parallel {
+   
+    1..20 |ForEach-Object -Parallel {
+        $rn = Get-Random
+        $vmname= 'Test'+ $rn
         Use-PowerCLIContext -PowerCLIContext $using:pcliContext -SkipImportModuleChecks
-        (Get-VM -Name $_.Name ).Name
+        New-VM -Name $vmname -DiskStorageFormat Thin -Location Auto-Build -ResourcePool $using:cluster -Datastore CPBU_TKT2169456_2TB_02 -RunAsync
+        Sleep .1
     }
     
 }
@@ -18,20 +22,26 @@ Function Execute-WithPcliContext
 #Example 2: foreach-object -parallel with $using variable scope
 Function Execute-WithoutPcliContext
 {
-    
-    $vmlist= get-VM
-    $vmlist |ForEach-Object -Parallel {
-        (Get-VM -Name $_.Name -Server $using:conn).Name
+  
+    1..20 |ForEach-Object -Parallel {
+        $rn = Get-Random
+        $vmname= 'Test'+ $rn
+        New-VM -Name $vmname -DiskStorageFormat Thin -Location Auto-Build -ResourcePool $using:cluster  -Datastore CPBU_TKT2169456_2TB_02 -Server $using:conn -RunAsync
+        Sleep .1
     }
    
 }
 
-#without foreach-object -parallel 
+#Example 2: foreach-object -parallel with $using variable scope
 Function Execute-WithoutForeachParallel
 {
    
-    $vmlist= get-VM
-    foreach($vm in $vmlist){
-        (Get-VM -Name $vm.Name ).Name
+   
+    for($i=0;$i -lt 20 ;$i++){
+        
+        $rn = Get-Random
+        $vmname= 'Test'+ $rn
+        New-VM -Name $vmname -DiskStorageFormat Thin -Location Auto-Build -ResourcePool $cluster  -Datastore CPBU_TKT2169456_2TB_02 -RunAsync
+        Sleep .1
     }
 }
